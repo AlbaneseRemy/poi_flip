@@ -44,6 +44,7 @@ class _AnimatedSwipeState extends State<AnimatedSwipe> with SingleTickerProvider
       animation: _controller,
       builder: (context, child) {
         return RotationTransition(
+          alignment: FractionalOffset.bottomCenter,
           turns: _animation,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
