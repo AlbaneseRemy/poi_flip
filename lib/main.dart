@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:poi_flip/animated_swipe.dart';
 import 'package:poi_flip/transform_test.dart';
 import 'dart:math';
 
@@ -71,18 +72,24 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
       ),
       body: Stack(
         children: <Widget>[
-          Center(
-            child: GestureDetector(
-              onHorizontalDragEnd: (details) => flipImage(details),
-              child: Stack(children: [
-                for (var image in images.reversed)
-                  Transform(
-                      transform: Matrix4.identity()
-                        ..setEntry(3, 2, 0.001)
-                        ..rotateY(rotationValue()),
-                      alignment: FractionalOffset.center,
-                      child: Visibility(visible: currentIndex == images.indexOf(image), child: Image.asset(image, fit: BoxFit.cover))),
-              ]),
+          GestureDetector(
+            onHorizontalDragEnd: (details) => flipImage(details),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Stack(children: [
+                  for (var image in images.reversed)
+
+                    Transform(
+                        transform: Matrix4.identity()
+                          ..setEntry(3, 2, 0.001)
+                          ..rotateY(rotationValue()),
+                        alignment: FractionalOffset.center,
+                        child: Visibility(visible: currentIndex == images.indexOf(image), child: Image.asset(image, fit: BoxFit.cover))),
+                ]),
+                const Center(child: AnimatedSwipe()),
+              ],
             ),
           ),
           Center(
