@@ -37,13 +37,16 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
   late AnimationController _controller;
   late Animation<double> _animation;
 
+  bool shouldSwapImage = true;
+  bool isImageFlipped = false;
+
   @override
   void initState() {
     currentIndex = 0;
     images = [
       'assets/images/chat1.jpeg',
       'assets/images/chat2.jpeg',
-      'assets/images/chat3.jpeg',
+      //'assets/images/chat3.jpeg',
     ];
 
     _controller = AnimationController(
@@ -76,8 +79,8 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                   Transform(
                       transform: Matrix4.identity()
                         ..setEntry(3, 2, 0.001)
-                        ..rotateY(pi * _animation.value),
-                        alignment: FractionalOffset.center,
+                        ..rotateY(rotationValue()),
+                      alignment: FractionalOffset.center,
                       child: Visibility(visible: currentIndex == images.indexOf(image), child: Image.asset(image, fit: BoxFit.cover))),
               ]),
             ),
@@ -86,8 +89,8 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                ChangePageButton(icon: const Icon(Icons.arrow_back_ios), onTap: () => updateImage((currentIndex - 1) % (images.length))),
-                ChangePageButton(icon: const Icon(Icons.arrow_forward_ios), onTap: () => updateImage((currentIndex + 1) % (images.length))),
+                ChangePageButton(icon: const Icon(Icons.arrow_back_ios), onTap: () => updateImage()),
+                ChangePageButton(icon: const Icon(Icons.arrow_forward_ios), onTap: () => updateImage()),
               ],
             ),
           ),
@@ -97,31 +100,50 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
   }
 
   void flipImage(DragEndDetails details) {
-    if (details.velocity.pixelsPerSecond.dx > 0) {
-      updateImage((currentIndex - 1) % (images.length));
-    } else if (details.velocity.pixelsPerSecond.dx < 0) {
-      updateImage((currentIndex + 1) % (images.length));
-    }
+    updateImage();
   }
 
   double rotationValue() {
     setState(() {});
+    if (!isImageFlipped) {
+      if (_animation.value >= 0.5) {
+        updateIndex((currentIndex + 1) % (images.length));
+      }
+
+    } else if (isImageFlipped) {
+      if (_animation.value <= 0.5) {
+        updateIndex((currentIndex + 1) % (images.length));
+      }
+    }
+
     return pi * _animation.value;
   }
 
-  Future<void> updateImage(int newIndex) async {
-    await _controller.forward();
-    updateIndex(newIndex);
-    _controller.reset();
+  Future<void> updateImage() async {
+    if (isImageFlipped) {
+      await _controller.reverse();
+      isImageFlipped = false;
+    } else {
+      await _controller.forward();
+      isImageFlipped = true;
+    }
+
+    shouldSwapImage = true;
   }
 
   void updateIndex(int newIndex) {
-    currentIndex = newIndex;
+    if (shouldSwapImage) {
+      currentIndex = newIndex;
+      shouldSwapImage = false;
+    }
   }
 
   @override
   void dispose() {
     _controller.dispose(); // Dispose the animation controller
+    _animation.removeListener(() {
+      setState(() {});
+    });
     super.dispose();
   }
 
